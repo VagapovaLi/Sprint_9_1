@@ -2,8 +2,9 @@ import pytest
 import allure
 from urls import BASE_URL
 from api_client.api_client_session import ApiClient
-from urls import ENDPOINT_SIGNUP , ENDPOINT_SIGNIN , ENDPOINT_LISTINGS
+from urls import ENDPOINT_SIGNUP , ENDPOINT_SIGNIN , ENDPOINT_LISTINGS, ENDPOINT_CREATE_LISTING
 from utilities.data_generator import DataGenerator as Dg
+from pathlib import Path
 
 
 @pytest.fixture
@@ -75,6 +76,63 @@ def auth_token(api_client, create_user):
 
 
 
+
+@pytest.fixture
+def create_test_listing(api_client, auth_token):
+    """Фикстура создания тестового объявления"""
+    with allure.step("Создание тестового объявления"):
+        # Генерация тестовых данных
+        data = Dg.create_listing_data()
+        allure.attach(str(data), name="Данные для создания объявления", attachment_type=allure.attachment_type.TEXT)
+
+        with allure.step("Подготовка файлов для отправки"):
+            # Путь к изображению в проекте
+            image_path = Path(__file__).parent.parent / "settings" / "test_image.jpg"
+
+            # Чтение изображения
+            with open(image_path, 'rb') as image_file:
+                image_data = image_file.read()
+
+            test_files = [
+                ('images', (f'image_{Dg.generator_uid()}.jpg', image_data, 'image/jpeg'))
+            ]
+
+        # Заголовки запроса
+        headers = {
+            "Authorization": f"Bearer {auth_token}",
+            "Accept": "application/json"
+        }
+
+        # Отправка запроса
+        response = api_client.post(
+            endpoint=ENDPOINT_CREATE_LISTING,
+            headers=headers,
+            data=data,
+            files=test_files
+        )
+
+        allure.attach(
+            f"Request: POST {BASE_URL}{ENDPOINT_CREATE_LISTING}\n"
+            f"Headers: {headers}\n"
+            f"Data: {data}\n"
+            f"Response Status: {response.status_code}\n"
+            f"Response Body: {response.text}",
+            name="Детали запроса создания объявления",
+            attachment_type=allure.attachment_type.TEXT
+        )
+
+        # Проверка статус-кода
+        assert response.status_code == 201, (
+            f"Ожидался статус код 201, но получен {response.status_code}. "
+            f"Ответ сервера: {response.text}"
+        )
+
+        # Получение и проверка ответа
+        response_data = response.json()
+        return response_data
+
+
+
 @pytest.fixture
 def delete_test_listing(api_client, auth_token):
     data_delete_listing = {'id': None}
@@ -109,3 +167,40 @@ def delete_test_listing(api_client, auth_token):
             f"Ожидался статус код 200 (Ok), но получен {delete_response.status_code}. "
             f"Ответ сервера: {delete_response.text}"
         )
+
+
+
+@pytest.fixture
+def another_auth_token(api_client):
+    with allure.step("Создание и аутентификация другого пользователя"):
+        # Регистрация и логин другого пользователя
+        another_user = {
+            "email": "another_user@example.com",
+            "password": "another_password123",
+            "submitPassword": "another_password123"
+        }
+
+        # Регистрация
+        reg_response = api_client.post(
+            endpoint=ENDPOINT_SIGNUP,
+            json=another_user
+        )
+
+        # Логин
+        login_response = api_client.post(
+            endpoint=ENDPOINT_SIGNIN,
+            json=another_user
+        )
+
+        allure.attach(
+            f"Другой пользователь:\n"
+            f"Email: {another_user['email']}\n"
+            f"Password: {another_user['password']}\n\n"
+            f"Response Status (регистрация): {reg_response.status_code}\n"
+            f"Response Status (логин): {login_response.status_code}",
+            name="Детали другого пользователя",
+            attachment_type=allure.attachment_type.TEXT
+        )
+
+        return login_response.json()["token"]["access_token"]
+
