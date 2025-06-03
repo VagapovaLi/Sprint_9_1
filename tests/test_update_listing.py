@@ -2,7 +2,7 @@ import time
 import allure
 import pytest
 
-from urls import ENDPOINT_UPDATE_LISTING, BASE_URL
+from urls import ENDPOINT_UPDATE_OFFER, BASE_URL
 from utilities.data_generator import DataGenerator as Dg
 from faker import Faker
 
@@ -42,7 +42,7 @@ class TestUpdateListing:
 
             time.sleep(1)  # Для различия дат создания и обновления
             response = api_client.patch(
-                endpoint=f"{ENDPOINT_UPDATE_LISTING}/{listing_id}",
+                endpoint=f"{ENDPOINT_UPDATE_OFFER}/{listing_id}",
                 headers=headers,
                 json=update_data
             )
@@ -93,13 +93,13 @@ class TestUpdateListing:
         }
 
         response = api_client.patch(
-            endpoint=f"{ENDPOINT_UPDATE_LISTING}/{listing_id}",
+            endpoint=f"{ENDPOINT_UPDATE_OFFER}/{listing_id}",
             headers=headers,
             data=update_data
         )
 
         allure.attach(
-            f"Request: PATCH {BASE_URL}{ENDPOINT_UPDATE_LISTING}/{listing_id}\n"
+            f"Request: PATCH {BASE_URL}{ENDPOINT_UPDATE_OFFER}/{listing_id}\n"
             f"Headers: {headers}\n"
             f"Data: {update_data}\n"
             f"Response Status: {response.status_code}\n"

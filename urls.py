@@ -1,8 +1,6 @@
-
-
-#class SettingsDoska:
-    # Базовый URL API
+# Базовый URL API
 BASE_URL = "https://qa-desk.stand.praktikum-services.ru/api"
+
 # Регистрация
 ENDPOINT_SIGNUP = "/signup"
 
@@ -12,7 +10,7 @@ ENDPOINT_SIGNIN = "/signin"
 ENDPOINT_CREATE_LISTING = "/create-listing"
 
 # Обновление объявления
-ENDPOINT_UPDATE_LISTING = "/update-offer"
+ENDPOINT_UPDATE_OFFER = "/update-offer"
 
 # Объявления (Используется для удаления)
 ENDPOINT_LISTINGS = "/listings"

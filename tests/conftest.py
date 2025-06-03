@@ -17,14 +17,13 @@ def api_client():
 
 @pytest.fixture
 def registration_data():
-    #with allure.step("Генерация тестовых данных для регистрации пользователя"):
+    #Генерация тестовых данных для регистрации пользователя
         fake_user = Dg.create_fake_user()
         data = {
             "email": fake_user.get("email"),
             "password": fake_user.get("password"),
             "submitPassword": fake_user.get("password")
         }
-        #allure.attach(str(data), name="Регистрационные данные", attachment_type=allure.attachment_type.TEXT)
         return data
 
 @pytest.fixture
@@ -46,22 +45,12 @@ def create_user(api_client, registration_data):
 
 @pytest.fixture
 def auth_token(api_client, create_user):
-    #with allure.step("Получение токена аутентификации"):
         payload = create_user
 
         response = api_client.post(
             endpoint=ENDPOINT_SIGNIN,
             json=payload
         )
-
-        # allure.attach(
-        #     f"Request: POST {Sd.BASE_URL}{Sd.ENDPOINT_SIGNIN}\n"
-        #     f"Request Body: {payload}\n"
-        #     f"Response Status: {response.status_code}\n"
-        #     f"Response Body: {response.text}",
-        #     name="Детали запроса/ответа аутентификации",
-        #     attachment_type=allure.attachment_type.TEXT
-        # )
 
         # Проверка статус-кода
         assert response.status_code == 201, f"Ожидался статус код 201, но получен {response.status_code}"
@@ -71,11 +60,6 @@ def auth_token(api_client, create_user):
         token_data = response_data["token"]
         token = token_data["access_token"]
         return token
-
-
-
-
-
 
 @pytest.fixture
 def create_test_listing(api_client, auth_token):
