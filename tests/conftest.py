@@ -28,11 +28,11 @@ def registration_data():
 
 @pytest.fixture
 def create_user(api_client, registration_data):
-    with allure.step("Создание нового пользователя"):
-        response = api_client.post(
-            endpoint=ENDPOINT_SIGNUP,
-            json=registration_data
-        )
+    #Создание нового пользователя
+    response = api_client.post(
+        endpoint=ENDPOINT_SIGNUP,
+        json=registration_data
+    )
 
     assert response.status_code == 201
     user = {
@@ -46,7 +46,6 @@ def create_user(api_client, registration_data):
 @pytest.fixture
 def auth_token(api_client, create_user):
         payload = create_user
-
         response = api_client.post(
             endpoint=ENDPOINT_SIGNIN,
             json=payload
@@ -63,17 +62,16 @@ def auth_token(api_client, create_user):
 
 @pytest.fixture
 def create_test_listing(api_client, auth_token):
+
     """Фикстура создания тестового объявления"""
     with allure.step("Создание тестового объявления"):
         # Генерация тестовых данных
         data = Dg.create_listing_data()
-        allure.attach(str(data), name="Данные для создания объявления", attachment_type=allure.attachment_type.TEXT)
 
         with allure.step("Подготовка файлов для отправки"):
             # Путь к изображению в проекте
             image_path = Path(__file__).parent.parent / "settings" / "test_image.jpg"
 
-            # Чтение изображения
             with open(image_path, 'rb') as image_file:
                 image_data = image_file.read()
 
@@ -81,13 +79,11 @@ def create_test_listing(api_client, auth_token):
                 ('images', (f'image_{Dg.generator_uid()}.jpg', image_data, 'image/jpeg'))
             ]
 
-        # Заголовки запроса
         headers = {
             "Authorization": f"Bearer {auth_token}",
             "Accept": "application/json"
         }
 
-        # Отправка запроса
         response = api_client.post(
             endpoint=ENDPOINT_CREATE_LISTING,
             headers=headers,
@@ -95,26 +91,13 @@ def create_test_listing(api_client, auth_token):
             files=test_files
         )
 
-        allure.attach(
-            f"Request: POST {BASE_URL}{ENDPOINT_CREATE_LISTING}\n"
-            f"Headers: {headers}\n"
-            f"Data: {data}\n"
-            f"Response Status: {response.status_code}\n"
-            f"Response Body: {response.text}",
-            name="Детали запроса создания объявления",
-            attachment_type=allure.attachment_type.TEXT
-        )
-
-        # Проверка статус-кода
         assert response.status_code == 201, (
             f"Ожидался статус код 201, но получен {response.status_code}. "
             f"Ответ сервера: {response.text}"
         )
 
-        # Получение и проверка ответа
         response_data = response.json()
         return response_data
-
 
 
 @pytest.fixture
@@ -122,69 +105,47 @@ def delete_test_listing(api_client, auth_token):
     data_delete_listing = {'id': None}
     yield data_delete_listing
 
+    #Удаление тестового объявления
+    if data_delete_listing['id'] is None:
+        return
 
-    with allure.step("Удаление тестового объявления"):
-        if data_delete_listing['id'] is None:
-            return
+    # Заголовки с токеном авторизации
+    headers = {
+        "Authorization": f"Bearer {auth_token}",
+        "Accept": "application/json"
+    }
 
-        # Заголовки с токеном авторизации
-        headers = {
-            "Authorization": f"Bearer {auth_token}",
-            "Accept": "application/json"
-        }
+    delete_response = api_client.delete(
+        endpoint=f"{ENDPOINT_LISTINGS}/{data_delete_listing['id']}",
+        headers=headers
+    )
 
-        delete_response = api_client.delete(
-            endpoint=f"{ENDPOINT_LISTINGS}/{data_delete_listing['id']}",
-            headers=headers
-        )
-
-        # allure.attach(
-        #     f"Request: DELETE {Sd.BASE_URL}{Sd.ENDPOINT_LISTINGS}/{data_delete_listing['id']}\n"
-        #     f"Headers: {headers}\n"
-        #     f"Response Status: {delete_response.status_code}\n"
-        #     f"Response Body: {delete_response.text}",
-        #     name="Детали запроса удаления объявления",
-        #     attachment_type=allure.attachment_type.TEXT
-        # )
-
-        assert delete_response.status_code == 200, (
-            f"Ожидался статус код 200 (Ok), но получен {delete_response.status_code}. "
-            f"Ответ сервера: {delete_response.text}"
-        )
-
-
+    assert delete_response.status_code == 200, (
+        f"Ожидался статус код 200 (Ok), но получен {delete_response.status_code}. "
+        f"Ответ сервера: {delete_response.text}"
+    )
 
 @pytest.fixture
 def another_auth_token(api_client):
-    with allure.step("Создание и аутентификация другого пользователя"):
-        # Регистрация и логин другого пользователя
-        another_user = {
-            "email": "another_user@example.com",
-            "password": "another_password123",
-            "submitPassword": "another_password123"
-        }
 
-        # Регистрация
-        reg_response = api_client.post(
-            endpoint=ENDPOINT_SIGNUP,
-            json=another_user
-        )
+    # Регистрация и логин другого пользователя
+    another_user = {
+        "email": "another_user@example.com",
+        "password": "another_password123",
+        "submitPassword": "another_password123"
+    }
 
-        # Логин
-        login_response = api_client.post(
-            endpoint=ENDPOINT_SIGNIN,
-            json=another_user
-        )
+    # Регистрация
+    reg_response = api_client.post(
+        endpoint=ENDPOINT_SIGNUP,
+        json=another_user
+    )
 
-        allure.attach(
-            f"Другой пользователь:\n"
-            f"Email: {another_user['email']}\n"
-            f"Password: {another_user['password']}\n\n"
-            f"Response Status (регистрация): {reg_response.status_code}\n"
-            f"Response Status (логин): {login_response.status_code}",
-            name="Детали другого пользователя",
-            attachment_type=allure.attachment_type.TEXT
-        )
+    # Логин
+    login_response = api_client.post(
+        endpoint=ENDPOINT_SIGNIN,
+        json=another_user
+    )
 
-        return login_response.json()["token"]["access_token"]
+    return login_response.json()["token"]["access_token"]
 

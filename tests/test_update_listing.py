@@ -21,19 +21,12 @@ class TestUpdateListing:
         ("price", fake.pyint(min_value=100, max_value=1000000)),
     ])
 
-    def test_update_single_field_listing_success(self, api_client, auth_token, create_test_listing, delete_test_listing,
+    def test_update_single_field_listing_success_expected_answer_200(self, api_client, auth_token, create_test_listing, delete_test_listing,
                                                  field, new_value):
             listing_id = create_test_listing["id"]
             delete_test_listing['id'] = listing_id
             update_data = create_test_listing.copy()
             update_data[field] = new_value
-
-            allure.attach(
-                f"Обновляемое поле: {field}\n"
-                f"Новое значение: {new_value}",
-                name="Данные для обновления",
-                attachment_type=allure.attachment_type.TEXT
-            )
 
             headers = {
                 "Authorization": f"Bearer {auth_token}",
@@ -58,8 +51,6 @@ class TestUpdateListing:
                 f"Поле {field} не обновилось. "
                 f"Ожидалось: {expected_value}, получено: {updated_listing[field]}"
             )
-            allure.attach(f"Поле {field} успешно обновлено", name="Результат проверки",
-                              attachment_type=allure.attachment_type.TEXT)
 
             unchanged_fields = [key for key in create_test_listing
                                 if key not in [field, "updatedAt", "id", "img1", "img2", "img3"]]
@@ -68,13 +59,9 @@ class TestUpdateListing:
                     f"Поле {key} изменилось, хотя не должно было. "
                     f"Было: {create_test_listing[key]}, стало: {updated_listing[key]}"
                 )
-            allure.attach(f"Проверено {len(unchanged_fields)} неизменившихся полей", name="Результат проверки",
-                          attachment_type=allure.attachment_type.TEXT)
-
 
             assert updated_listing["updatedAt"] != create_test_listing["updatedAt"], (
                 "Дата обновления должна измениться после редактирования")
-
 
 
     @allure.story("Редактирование объявления, созданного не тем пользователем")
@@ -96,16 +83,6 @@ class TestUpdateListing:
             endpoint=f"{ENDPOINT_UPDATE_OFFER}/{listing_id}",
             headers=headers,
             data=update_data
-        )
-
-        allure.attach(
-            f"Request: PATCH {BASE_URL}{ENDPOINT_UPDATE_OFFER}/{listing_id}\n"
-            f"Headers: {headers}\n"
-            f"Data: {update_data}\n"
-            f"Response Status: {response.status_code}\n"
-            f"Response Body: {response.text}",
-            name="Детали запроса и ответа",
-            attachment_type=allure.attachment_type.TEXT
         )
 
         assert response.status_code == 401, (

@@ -17,8 +17,6 @@ class TestRegistrationUser:
             f"Ожидался статус код 201, но получен {response.status_code}"
 
         response_data = response.json()
-
-
         assert "user" in response_data, "Ответ должен содержать объект 'user'"
         assert "access_token" in response_data, "Ответ должен содержать объект 'access_token'"
 
@@ -39,8 +37,6 @@ class TestRegistrationUser:
     @allure.story("Регистрация с уже существующим email")
     @allure.title("Проверка обработки повторной регистрации")
     def test_registration_with_repeat_email_expected_answer_400(self, api_client, registration_data):
-
-
 
         first_response = api_client.post(
             endpoint=ENDPOINT_SIGNUP,

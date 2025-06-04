@@ -1,12 +1,9 @@
-
 import allure
-
 from urls import ENDPOINT_SIGNIN
 
 @allure.story('Сценарии авторизации пользователя')
-# adadad@mail.ru 112233
 @allure.title('Авторизация пользователя.Ожидаемый результат: 201')
-def test_login_user_expected_answer_201(api_client, create_user):
+def test_login_user_success_expected_answer_201(api_client, create_user):
         payload = create_user
 
         response = api_client.post(

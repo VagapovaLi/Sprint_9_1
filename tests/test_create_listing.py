@@ -11,9 +11,9 @@ from pathlib import Path
 @allure.story("Успешное создание объявления")
 class TestCreateListing:
     @allure.title("Проверка успешного создания объявления")
-    def test_create_listing_succes_sexpected_answer_201(self, api_client, auth_token, delete_test_listing):
+    def test_successful_listing_creation_success_expected_answer_201(self, api_client, auth_token, delete_test_listing):
+
         data = Dg.create_listing_data()
-        allure.attach(str(data), name="Данные для создания объявления", attachment_type=allure.attachment_type.TEXT)
         image_path = Path(__file__).parent.parent / "settings" / "test_image.jpg"
 
         with open(image_path, 'rb') as image_file:
@@ -73,8 +73,7 @@ class TestCreateListing:
         try:
             datetime.fromisoformat(response_data['createdAt'].replace('Z', ''))
             datetime.fromisoformat(response_data['updatedAt'].replace('Z', ''))
-            allure.attach("Формат дат корректный", name="Результат проверки",
-                              attachment_type=allure.attachment_type.TEXT)
+
         except ValueError :
             data_comparison = [
                 ('name', 'Название'),
@@ -100,9 +99,3 @@ class TestCreateListing:
             assert 'isFavorite' in response_data, "Отсутствует поле isFavorite"
             assert response_data['createdAt'] == response_data[
                 'updatedAt'], "Даты создания и обновления должны совпадать для нового объявления"
-            allure.attach(
-                f"createdAt: {response_data['createdAt']}\n"
-                f"updatedAt: {response_data['updatedAt']}",
-                name="Даты создания и обновления",
-                attachment_type=allure.attachment_type.TEXT
-            )
