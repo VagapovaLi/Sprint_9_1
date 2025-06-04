@@ -4,7 +4,7 @@ class ApiClient:
     def __init__(self, base_url, timeout=10):
         self.base_url = base_url
         self.timeout = timeout
-        self.session = requests.Session()  # Добавляем сессию
+        self.session = requests.Session()
 
 
     def get(self, endpoint, params=None, headers=None):

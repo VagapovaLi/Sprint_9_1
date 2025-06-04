@@ -5,7 +5,7 @@ import allure
 
 class StringGenerator:
     @staticmethod
-    #Генерирует случайную строку из букв нижнего регистра заданной длины.
+    @allure.step('Генерирует случайную строку из букв нижнего регистра заданной длины')
     def generate_random_string(length):
         letters = string.ascii_lowercase
         return ''.join(random.choice(letters) for _ in range(length))

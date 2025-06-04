@@ -33,7 +33,6 @@ class TestUpdateListing:
                 "Accept": "application/json"
             }
 
-            time.sleep(1)  # Для различия дат создания и обновления
             response = api_client.patch(
                 endpoint=f"{ENDPOINT_UPDATE_OFFER}/{listing_id}",
                 headers=headers,
